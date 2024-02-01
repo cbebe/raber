@@ -42,26 +42,28 @@ addPiece.addEventListener("click", () => {
 });
 
 calculate.addEventListener("click", () => {
-  const rebar = getInput("rebar")
-  const piece = getInput("piece")
+  const rebar = getInput("rebar");
+  const piece = getInput("piece");
   const pieceList = document.querySelectorAll("#piece-list > li");
   const needed = {};
 
   for (const p of pieceList) {
-    const length = p.getAttribute('data-len')
-    const numPieces = p.getAttribute('data-pcs')
+    const length = p.getAttribute("data-len");
+    const numPieces = p.getAttribute("data-pcs");
     if (!(length in needed)) {
-      needed[length] = 0
+      needed[length] = 0;
     }
-    needed[length] += Number(numPieces)
+    needed[length] += Number(numPieces);
   }
+  console.time("raber calculate");
   const raber = new Raber(rebar, piece);
   const rebars = raber.calculate(needed);
-  const [total, waste]  = raber.calculateWaste(rebars);
-        alert(`\
+  const [total, waste] = raber.calculateWaste(rebars);
+  console.timeEnd("raber calculate");
+  alert(`\
 Combinations and # of pieces: ${JSON.stringify(rebars, null, 2)}
 Full 12m rebars required: ${total}
-Waste: ${(waste/100).toFixed(2)} m`)
+Waste: ${(waste / 100).toFixed(2)} m`);
 });
 
 refreshEventListeners();
