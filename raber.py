@@ -7,23 +7,24 @@ required and the amount of waste.
 """
 
 import math
-from collections import Counter
+from collections import Counter, defaultdict
+from itertools import combinations
 
 REBAR_LENGTH = 1200
 PIECE_SIZE = 550
-GROUPS = 2
 
 sizes = {
     3: {
-        170: 8,  # T02
-        15: 4,  # T03
+        170: 16,  # T02
+        15: 8,  # T03
+        200: 126,  # Decking!
     },
-    4: {325: 10},  # A03
+    4: {325: 20},  # A03
     5: {
-        413: 4,  # T01
-        300: 2,  # A02
+        413: 8,  # T01
+        300: 4,  # A02
     },
-    6: {285: 10},  # A01
+    6: {285: 20},  # A01
 }
 
 
@@ -44,24 +45,45 @@ def calculate_waste(required: dict):
         for k, v in required.items()
     )
 
-    return from_bend + from_extra_piece + from_piece_remainders
+    total_waste = from_bend + from_extra_piece + from_piece_remainders
+
+    return num_full_rebars, total_waste
 
 
-def multiple_lengths(needed: dict):
-    print('WARNING: multiple lengths NOT implemented')
-    return {}
+def create_combinations(needed: dict):
+    """
+    Assumption: There are only two kinds
+    """
+    def get_max_bars(tup: tuple):
+        length, num_pcs = tup
+        return [length] * min(math.ceil(PIECE_SIZE/length), num_pcs)
+    all_valid_bars = [j for i in needed.items() for j in get_max_bars(i)]
+    valid_combos = set()
+    seen = set()
+    for i in range(len(all_valid_bars)):
+        for c in combinations(all_valid_bars, i):
+            if c not in seen and sum(c) <= PIECE_SIZE and len(c):
+                valid_combos.add(c)
+            seen.add(c)
+    return valid_combos
 
 
-def main(inputs: dict, num_grps=1):
+def combo_fits(needed: dict, combo: tuple):
+    """
+    Check if the combination satisfies the pieces still needed
+    """
+    c = Counter(combo)
+    valid = all(c[k] <= needed[k] for k in c)
+    return c if valid else None
+
+
+def main(needed: dict):
     """
     Inputs
     ------
 
     - `input`: Dictionary with keys as lengths and values as the quantity.
-    - `num_grps`: Number of groups by which to multiply the original `input`
-      values.
     """
-    needed = {length: num_pcs*num_grps for length, num_pcs in inputs.items()}
 
     # Case 1: the PIECE_SIZE can only produce 1 piece from the input,
     # the rest is wasted
@@ -79,14 +101,27 @@ def main(inputs: dict, num_grps=1):
         return num_rebars
 
     # Case 3: Can be matched
-    return multiple_lengths(needed)
+    # greedy solution, not sure if it's good tbh
+    combinations = create_combinations(needed)
+    cp = dict(needed)
+    rebars = defaultdict(lambda: 0)
+    while any(c for c in cp.values()):
+        min_waste = max(combinations, key=sum)
+        while (counter := combo_fits(cp, min_waste)):
+            rebars[min_waste] += 1
+            for c in counter:
+                cp[c] -= counter[c]
+        combinations.remove(min_waste)
+
+    return dict(rebars)
 
 
 if __name__ == "__main__":
     for k, v in sizes.items():
-        num_rebars = main(v, GROUPS)
-        waste = calculate_waste(num_rebars)
+        num_rebars = main(v)
+        num_full_rebars, waste = calculate_waste(num_rebars)
         print("-------------------\n"
-              f"{v} * {GROUPS} groups\n"
+              f"{v}\n"
               f"#{k} rebar {PIECE_SIZE} cm pieces: {num_rebars}\n"
+              f"#{k} full 12m rebars: {num_full_rebars}\n"
               f"waste: {waste/100:02} m")
