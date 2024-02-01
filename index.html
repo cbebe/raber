@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Raber</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Minimize rebar waste!">
+	<script src="index.js" async></script>
+	<script src="Raber.js" async></script>
+</head>
+
+<body>
+	<h1>Raber</h1>
+	<div>
+		<label>Rebar Length (cm)</label>
+		<input type="number" value="1200" id="rebar">
+	</div>
+
+	<div>
+		<label>Cut piece size (cm)</label>
+		<input type="number" value="550" id="piece">
+	</div>
+
+	<div>
+		<div>
+			<label>Section size (cm)</label>
+			<input type="number" value="170" id="section">
+		</div>
+		<div>
+			<label>Num Pieces</label>
+			<input type="number" value="8" id="num-pieces">
+		</div>
+		<button id="add-piece">Add Piece Type</button>
+	</div>
+
+	<ol id="piece-list">
+		<li id="piece-1" data-len="170" data-pcs="16">170 cm (16 pcs) <button>Delete</button></li>
+		<li id="piece-2" data-len="15" data-pcs="8">15 cm (8 pcs) <button>Delete</button></li>
+		<li id="piece-3" data-len="200" data-pcs="126">200 cm (126 pcs) <button>Delete</button></li>
+	</ol>
+
+	<button id="calculate">Calculate</button>
+</body>
+
+</html>

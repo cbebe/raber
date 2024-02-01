@@ -2,13 +2,15 @@
 """
 raber.py
 
+Original code :)
+
 Given the number of sections needed, calculate the number 12m rebars
 required and the amount of waste.
 """
 
 import math
 from collections import Counter, defaultdict
-from itertools import combinations
+import itertools
 
 REBAR_LENGTH = 1200
 PIECE_SIZE = 550
@@ -61,7 +63,7 @@ def create_combinations(needed: dict):
     valid_combos = set()
     seen = set()
     for i in range(len(all_valid_bars)):
-        for c in combinations(all_valid_bars, i):
+        for c in itertools.combinations(all_valid_bars, i):
             if c not in seen and sum(c) <= PIECE_SIZE and len(c):
                 valid_combos.add(c)
             seen.add(c)
