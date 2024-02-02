@@ -28,15 +28,13 @@ class Raber {
     return [numFullRebars, fromBend + fromExtraPiece + fromPieceRemainders];
   }
 
-  createCombinations(needed) {
-    const allValidBars = Object.entries(needed)
-      .flatMap(([length, numPieces]) => {
-        const maxBars = Math.min(
-          Math.ceil(this.#rebarPieceSize / length),
-          numPieces,
-        );
-        return Array.from({ length: maxBars }, () => Number(length));
-      });
+  createCombinations(entries) {
+    const allValidBars = entries.flatMap(([length, numPieces]) =>
+      makeArr(
+        Math.min(Math.ceil(this.#rebarPieceSize / length), numPieces),
+        length,
+      )
+    );
 
     const validCombos = new Set();
     const seen = new Set();
@@ -57,7 +55,8 @@ class Raber {
   }
 
   calculate(needed) {
-    const entries = Object.entries(needed);
+    const entries = Object.entries(needed).map(([k, v]) => [+k, +v]);
+
     // Case 1: Only 1 type of section piece
     if (entries.length === 1) {
       const [[length, numPieces]] = entries;
@@ -65,14 +64,14 @@ class Raber {
     }
 
     // Case 2: Only 1 section piece can be produced from the rebar piece
-    if (Math.min(entries.map((e) => Number(e[0]))) * 2 > this.#rebarPieceSize) {
-      return Object.entries(needed).reduce((acc, [length, num]) => {
+    if (Math.min(entries.map((e) => e[0])) * 2 > this.#rebarPieceSize) {
+      return entries.reduce((acc, [length, num]) => {
         acc[[length]] = num;
         return acc;
       }, {});
     }
 
-    let combinations = Array.from(this.createCombinations(needed));
+    let combinations = Array.from(this.createCombinations(entries));
     const cp = { ...needed };
     const rebars = {};
 
@@ -133,16 +132,21 @@ function getPermutations(array, size) {
   return result;
 }
 
+function makeArr(length, item) {
+  return Array.from({ length }, () => item);
+}
+
 function singleType(numPieces, pieceLength, rebarPieceSize) {
   const numInOnePiece = Math.floor(rebarPieceSize / pieceLength);
   const numRebars = {};
-  numRebars[[...Array(numInOnePiece)].map(() => pieceLength)] = Math.floor(
-    numPieces / numInOnePiece,
-  );
+  const multiple = Math.floor(numPieces / numInOnePiece);
+  if (multiple > 0) {
+    numRebars[JSON.stringify(makeArr(numInOnePiece, pieceLength))] = multiple;
+  }
 
   const remainder = numPieces % numInOnePiece;
   if (remainder > 0) {
-    numRebars[[...Array(remainder)].map(() => pieceLength)] = 1;
+    numRebars[JSON.stringify(makeArr(remainder, pieceLength))] = 1;
   }
   return numRebars;
 }
